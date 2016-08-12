@@ -1,0 +1,71 @@
+#!/usr/local/bin/php
+<?php
+
+  $dhcp_leases_file = '/var/lib/dhcpd/dhcpd.leases';
+
+
+  // # 로시작되는 주석 제거
+  $tmpfile = "/tmp/tmpfile";
+  $cmd = "grep -v '^#' $dhcp_leases_file > $tmpfile";
+  system($cmd);
+
+  $content = file_get_contents($tmpfile);
+  //print $content;
+  $list = preg_split("/\n}\n/", $content);
+  //print_r($list);
+
+function parse_block($a) {
+
+  $ip = $starts = $ends = $tstp = $state = $mac = $uid = '';
+
+  $n = count($a);
+  for ($i = 0; $i < $n; $i++) {
+    $line = trim($a[$i]);
+    if ($line == '') continue;
+    //print $line."\n";
+    $b = preg_split("/ /", $line);
+    //print_r($b);
+
+    if ($b[0] == 'lease') @$ip = $b[1];
+    else if ($b[0] == 'starts') @$starts = $b[2].' '.$b[3];
+    else if ($b[0] == 'ends') @$ends = $b[2].' '.$b[3];
+    else if ($b[0] == 'tstp') @$tstp = $b[2].' '.$b[3];
+    else if ($b[0] == 'binding') @$state = $b[2];
+    else if ($b[0] == 'hardware') @$mac = $b[2];
+    else if ($b[0] == 'uid') @$uid = $b[1];
+  }
+
+  //print("<font color=red>$ip,$starts,$ends,$tstp,$state,$mac,$uid<br></font>";
+  return array($ip,$starts,$ends,$tstp,$state,$mac,$uid);
+}
+
+
+  $active_ip_list = array();
+
+  $cnt_active = $cnt_free = 0;
+  $n = count($list);
+  for ($i = 0; $i < $n; $i++) {
+    $block = $list[$i];
+    //print $block;
+    $tmp = preg_split("/[{;]/", $block);
+    //print_r($tmp);
+    list ($ip,$starts,$ends,$tstp,$state,$mac,$uid) = parse_block($tmp);
+    if ($ip == '') continue;
+
+    if ($state == 'active') $cnt_active++;
+    else if ($state == 'free') $cnt_free++;
+
+    if ($state == 'active') {
+      if (!in_array($ip, $active_ip_list)) {
+         array_push($active_ip_list, $ip);
+      }
+    }
+
+  }
+
+  $n_ip = count($active_ip_list);
+
+  print("$n_ip");
+
+
+?>

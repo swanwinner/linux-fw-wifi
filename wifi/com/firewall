@@ -1,0 +1,97 @@
+#!/bin/sh
+#
+# sh -x firewall
+# sh -v firewall
+#
+
+# network device setting
+source /www/wifi/config/config.sh
+
+#echo "internal" $DEVINT $IPINT
+#echo "external" $DEVEXT $IPEXT
+
+######################################################
+# DISPLAY
+######################################################
+if [[ ! -z $1 && $1 == '-s' ]]; then
+  echo "---------------------------------------------"
+  /sbin/iptables -L -n --line-numbers
+  #echo "---------------------------------------------"
+  #/sbin/iptables -t nat -vn -L --line-numbers
+  echo "---------------------------------------------"
+  /sbin/iptables -t nat -vn -L PREROUTING --line-numbers
+  exit
+fi
+
+echo 1 > /proc/sys/net/ipv4/ip_forward 
+
+
+# flush all rules of all chains
+/sbin/iptables --flush
+/sbin/iptables -t nat --flush
+/sbin/iptables -t mangle --flush
+
+# define default policies
+/sbin/iptables --policy INPUT DROP
+/sbin/iptables --policy OUTPUT ACCEPT
+/sbin/iptables --policy FORWARD ACCEPT
+
+# accept tcp non-SYN packets
+/sbin/iptables -A INPUT -p tcp ! --syn -j ACCEPT
+
+# loop back device
+/sbin/iptables -A INPUT -i lo -j ACCEPT
+
+
+######################################################
+# PREROUTING
+######################################################
+
+# 허용된 맥주소
+# DNAT for all IP's
+
+# 모두 허용
+#/sbin/iptables -t nat -A PREROUTING -i $DEVINT -j ACCEPT 
+
+# 허용된 맥주소만 허용
+. /www/wifi/com/mac.sh
+
+# 그리고, 모든 것을 차단
+/sbin/iptables -t nat -A PREROUTING  -s 0/0 -p tcp -i $DEVINT --sport 1024:65535 -j DNAT --to-destination $IPINT
+
+
+######################################################
+# POSTROUTING
+######################################################
+
+/sbin/iptables -t nat -A POSTROUTING   -o $DEVEXT -j SNAT --to $IPEXT
+
+######################################################
+# SERVICE PORTS
+######################################################
+
+# DNS
+/sbin/iptables -A INPUT -p udp  --sport 53 -j ACCEPT
+/sbin/iptables -A INPUT -p udp  --sport 53 -j ACCEPT
+/sbin/iptables -A FORWARD -p udp --sport 53 -j ACCEPT
+/sbin/iptables -A FORWARD -p udp --dport 53 -j ACCEPT
+
+
+# -----------------------------------------------------------------------------
+# sshd (22, 2222)
+# -----------------------------------------------------------------------------
+/sbin/iptables -A INPUT -p tcp                     --dport 22   -j ACCEPT
+/sbin/iptables -A INPUT -p tcp                     --dport 2222 -j ACCEPT
+
+# -----------------------------------------------------------------------------
+# httpd
+# -----------------------------------------------------------------------------
+/sbin/iptables -A INPUT -p tcp                     --dport 80 -j ACCEPT #
+
+# -----------------------------------------------------------------------------
+# icmp (ping)
+# -----------------------------------------------------------------------------
+/sbin/iptables -A INPUT -p icmp -j ACCEPT
+/sbin/iptables -A FORWARD -p icmp -j ACCEPT
+
+

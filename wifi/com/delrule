@@ -1,0 +1,43 @@
+#!/bin/sh
+
+# 사용법
+# delrule MAC_ADDRESS
+# nat 테이블 PREROUTING 채인에서 규칙을 삭제한다.
+
+
+mac=$1
+
+# 맥주소가 아규먼트로 넘어와야함
+if [ "$mac" = "" ]; then
+  echo "error:require mac"
+  exit
+fi
+
+# 맥주소의 길이는 17바이트임 "11:22:33:44:55:66"
+length=`expr length "$mac"`
+# echo $length
+if [ $length != 17 ]; then
+  echo "error:man address length is 17"
+  exit
+fi
+
+# iptables 상태 조회해서 맥 주소로 grep 한 결과에서 target 값을 얻는다.
+# --line-numbers 라인넘버를 함께 포함
+# awk.prog2 : awk 스크립트 파일
+#Chain PREROUTING (policy ACCEPT 830K packets, 84M bytes)
+#num   pkts bytes target     prot opt in     out     source               destination
+#1        0     0 ACCEPT     all  --  eth1   *       0.0.0.0/0            0.0.0.0/0           MAC 11:22:33:44:55:66
+num=`/sbin/iptables -t nat -vn -L PREROUTING --line-numbers | grep $mac | awk -f /www/com/awk.prog2`
+#echo $num
+if [[ -z "$num" ]]; then
+# echo "error:num is empty"
+  # 해당 맥주소가 없을 때는 에러를 내지 않는다.
+  exit
+fi
+
+
+  # 방화벽 규칙에서 삭제한다.
+  /sbin/iptables -t nat -D PREROUTING $num
+
+
+

@@ -1,0 +1,25 @@
+#!/usr/local/bin/php
+<?php
+
+  // timestamp 테이블에서 최근 60분 간 이벤트 수를 출력함
+
+  include("/www/config/config.php");
+  //print_r($conf);
+  $conn = mysql_connect($conf['dbhost'], $conf['dbuser'], $conf['dbpasswd']);
+  mysql_select_db($conf['dbname']);
+
+  ini_set("display_errors", "On");
+  ini_set("display_startup_errors", "On");
+  //error_reporting(E_ALL ^ E_NOTICE);
+  error_reporting(0);
+
+  // 최근 1시간
+  $qry = "select count(*) as count from dhcplog"
+      ." where t > subdate(now(), interval 60 minute)";
+  $ret = mysql_query($qry);
+  $row = mysql_fetch_array($ret);
+  $cnt = $row['count'];
+
+  print("$cnt\n");
+  
+?>

@@ -1,0 +1,44 @@
+#!/bin/sh
+
+# 사용법
+# addrule MAC_ADDRESS
+# nat 테이블 PREROUTING 채인에 규칙을 추가한다.
+
+
+mac=$1
+
+# 맥주소가 아규먼트로 넘어와야함
+if [ "$mac" = "" ]; then
+  echo "error:require mac"
+  exit
+fi
+
+# 맥주소의 길이는 17바이트임 "11:22:33:44:55:66"
+length=`expr length "$mac"`
+# echo $length
+if [ $length != 17 ]; then
+  echo "error:man address length is 17"
+  exit
+fi
+
+# iptables 상태 조회해서 맥 주소로 grep 한 결과에서 target 값을 얻는다.
+#pkts bytes target     prot opt in     out     source               destination
+#   0     0 ACCEPT     all  --  eth1   *       0.0.0.0/0            0.0.0.0/0           MAC 00:02:78:6C:89:AA
+#   0     0 ACCEPT     all  --  eth1   *       0.0.0.0/0            0.0.0.0/0           MAC FC:A1:3E:49:D1:FF
+target=`/sbin/iptables -t nat -vn -L PREROUTING | grep $mac | awk -f /www/com/awk.prog1`
+#echo $target
+if [[ -n "$target" && "$target" != "ACCEPT" ]]; then
+  echo "error:target is not accept"
+  exit
+fi
+
+if [ "$target" = "ACCEPT" ]; then
+  echo "error:mac address already in rule"
+  exit
+fi
+
+# 방화벽 규칙에 추가한다.
+# -I : 맨 앞에 추가함
+
+/sbin/iptables -t nat -I PREROUTING -i eth1 -m mac --mac-source $mac -j ACCEPT
+
