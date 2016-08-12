@@ -1,8 +1,0 @@
-
-
-grep "active" /var/lib/dhcpd/dhcpd.leases | wc -l
-
-grep "^lease" /var/lib/dhcpd/dhcpd.leases | wc -l
-
-grep "^lease" /var/lib/dhcpd/dhcpd.leases~ | wc -l
-
