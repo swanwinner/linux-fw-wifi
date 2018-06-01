@@ -4,12 +4,9 @@
   include("$env[prefix]/config/config.php");
   include("$env[prefix]/inc/func.php");
 
-  $conn = mysql_connect($conf['dbhost'], $conf['dbuser'], $conf['dbpasswd']);
-  mysql_select_db($conf['dbname']);
-
+  db_connect();
 
   session_start();
-
 
   if (!$_SESSION['logined']) {
     header("Location: /index.php");

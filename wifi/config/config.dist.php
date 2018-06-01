@@ -1,11 +1,11 @@
 <?php
 
   # database connection
-  $conf['dbhost']   = "localhost:/tmp/mysql.sock";
-
-  $conf['dbuser']   = "DB사용자";
-  $conf['dbpasswd'] = "암호";
+  $conf['dbhost']   = "localhost";
+  $conf['dbuser']   = "root";
+  $conf['dbpasswd'] = "******";
   $conf['dbname']   = "wifi";
+  $conf['use_mysqli']   = true;
 
   $conf['externalNIC'] = 'eth0';
   $conf['internalNIC'] = 'eth1';

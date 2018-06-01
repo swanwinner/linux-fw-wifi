@@ -8,42 +8,6 @@
   $ua = $_SERVER['HTTP_USER_AGENT'];
   $ru = $_SERVER['REQUEST_URI'];
 
-# print("<pre>");
-# print_r($_SERVER);
-# print("</pre>");
-# $uahash = md5($ua);
-
-/* =================================================================
-
-drop table missing;
-
-CREATE TABLE `missing` (
-
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-
-  `sv` char(40) DEFAULT NULL,
-  `qs` char(255) DEFAULT NULL,
-  `ip` char(15) DEFAULT NULL,
-  `ua` char(255) DEFAULT NULL,
-  `ru` char(255) DEFAULT NULL,
-  `hash` char(32) DEFAULT NULL,
-   ts  int,
-   td  date,
-
-  PRIMARY KEY (`id`),
-  KEY `hash` (`hash`),
-  KEY `uid` (`id`)
-) ENGINE=MyISAM AUTO_INCREMENT=1 DEFAULT CHARSET=euckr;
-
-
-select * from missing;
-select id,sv,ip,hash,ts,td from missing;
-
-
-
-================================================================= */
-
-
   $now = time();
   $today = date("Ymd");
 

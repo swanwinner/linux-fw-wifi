@@ -7,3 +7,5 @@ CREATE TABLE `login` (
   KEY `id` (`id`)
 ) ENGINE=MyISAM AUTO_INCREMENT=1 ;
 
+insert into login set username='admin', password=md5('0000');
+

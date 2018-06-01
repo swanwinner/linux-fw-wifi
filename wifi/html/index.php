@@ -7,14 +7,12 @@
 
 if ($mode == 'login') {
 
-print_r($form);
-
   // 비밀번호는 md5 hash 되서 넘어온다.
   $f_password = $form['pass'];
 
   $qry = "SELECT * FROM login WHERE username='admin'";
-  $ret = mysql_query($qry);
-  $lrow = mysql_fetch_assoc($ret);
+  $ret = db_query($qry);
+  $lrow = db_fetch($ret);
   $pw = $lrow['password'];
 
   // $time 과 db 의 password 를 해쉬하여 비교

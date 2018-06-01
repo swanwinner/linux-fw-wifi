@@ -6,7 +6,6 @@
   $ip = $_SERVER['REMOTE_ADDR'];
 
 
-
 ### {{{
 if ($mode == 'doadd' or $mode == 'doedit') {
   //print_r($form); exit;
@@ -34,8 +33,8 @@ if ($mode == 'doadd' or $mode == 'doedit') {
   if ($mode == 'doadd') {
 
     $qry = "SELECT * FROM users WHERE mac='$mac'";
-    $ret = mysql_query($qry);
-    $row = mysql_fetch_array($ret);
+    $ret = db_query($qry);
+    $row = db_fetch($ret);
     if ($row) {
       iError('같은 MAC주소가 존재합니다.');
     }
@@ -52,8 +51,7 @@ if ($mode == 'doadd' or $mode == 'doedit') {
       .",idate=now()"
       .",mname='$mname'"
       ;
-    $ret = mysql_query($qry);
-    print mysql_error();
+    $ret = db_query($qry);
 
     $msg = '사용자 등록이 완료되었습니다.';
 
@@ -62,8 +60,8 @@ if ($mode == 'doadd' or $mode == 'doedit') {
     $uid = $form['uid'];
 
     $qry = "SELECT * FROM users WHERE uid='$uid'";
-    $ret = mysql_query($qry);
-    $row = mysql_fetch_assoc($ret);
+    $ret = db_query($qry);
+    $row = db_fetch($ret);
     if (!$row) {
       iError('record not found');
     }
@@ -79,8 +77,7 @@ if ($mode == 'doadd' or $mode == 'doedit') {
       .",mname='$mname'"
       ." WHERE uid='$uid'"
       ;
-    $ret = mysql_query($qry);
-    print mysql_error();
+    $ret = db_query($qry);
 
     $msg = '사용자 정보수정이 완료되었습니다.';
   }
@@ -105,8 +102,7 @@ else if ($mode == 'doaddip') {
   $iptmp = $form['iptmp'];
 
   $qry = "INSERT INTO users SET iptmp='$iptmp', regdate=NOW(), idate=NOW()";
-  $ret = mysql_query($qry);
-  //print mysql_error();
+  $ret = db_query($qry);
 
   print<<<EOS
 <script>
@@ -172,8 +168,7 @@ else if ($mode == 'add' or $mode == 'edit') {
     $uid = $form['uid'];
 
     $qry = "SELECT * FROM users WHERE uid='$uid'";
-    $ret = mysql_query($qry);
-    $row = mysql_fetch_array($ret);
+    $row = db_fetchone($qry);
 
     $nextmode = 'doedit';
   }
@@ -234,9 +229,9 @@ EOS;
 
 
   $qry2 = "SELECT * FROM devices ORDER BY ord";
-  $ret2 = mysql_query($qry2);
+  $ret2 = db_query($qry2);
   $list = array();
-  while ($row2 = mysql_fetch_array($ret2)) {
+  while ($row2 = db_fetch($ret2)) {
     $title = $row2['title'];
     $list[] = $title;
   }
@@ -371,15 +366,15 @@ else if ($mode == 'ban') {
   $uid = $form['uid'];
 
   $qry = "SELECT * FROM users WHERE uid='$uid'";
-  $ret = mysql_query($qry);
-  $row = mysql_fetch_array($ret);
+  $ret = db_query($qry);
+  $row = db_fetch($ret);
   if (!$row) die('row not found');
   $mac = $row['mac'];
   //print $mac;
   #exit;
 
   $qry = "UPDATE users SET atime='0000-00-00',astamp=0 WHERE uid='$uid'";
-  $ret = mysql_query($qry);
+  $ret = db_query($qry);
 
 # // 방화벽 규칙을 삭제
 # $command = "/www/com/surun root \"/www/com/delrule $mac\"";
@@ -404,7 +399,7 @@ else if ($mode == 'delete') {
   //print $uid;
 
   $qry = "DELETE FROM users WHERE uid='$uid'";
-  $ret = mysql_query($qry);
+  $ret = db_query($qry);
 
   // 방화벽 규칙을 재설정
   $command = "/www/com/surun root /www/com/do.sh";
@@ -513,9 +508,8 @@ EOS;
 
 function _get_total_user_count() {
   $qry = "SELECT COUNT(*) AS total FROM users";
-  $ret = mysql_query($qry);
-  print mysql_error();
-  $row = mysql_fetch_assoc($ret);
+  $ret = db_query($qry);
+  $row = db_fetch($ret);
   $total = $row['total'];
   return $total;
 }
@@ -558,12 +552,11 @@ SELECT '기타'  AS model, COUNT(*) AS count FROM users WHERE
  AND model NOT LIKE '%애플%'
 ) A
 ";
-  $ret = mysql_query($qry);
-  print mysql_error();
+  $ret = db_query($qry);
 
   $html = "";
   $total = 0;
-  while ($row = mysql_fetch_assoc($ret)) {
+  while ($row = db_fetch($ret)) {
     $total += $row['count'];
     $html .= " {$row['model']}:{$row['count']}건";
   }
@@ -585,11 +578,10 @@ SELECT '기타'  AS model, COUNT(*) AS count FROM users WHERE
  AND model NOT LIKE '%노트북%'
 ) A
 ";
-  $ret = mysql_query($qry);
-  print mysql_error();
+  $ret = db_query($qry);
 
   $total = 0;
-  while ($row = mysql_fetch_assoc($ret)) {
+  while ($row = db_fetch($ret)) {
     //print_r($row);
     $total += $row['count'];
     $html .= " {$row['model']}:{$row['count']}건";
@@ -624,8 +616,8 @@ EOS;
   }
 
   $qry = "SELECT COUNT(*) AS total FROM users $sql_where";
-  $ret = mysql_query($qry);
-  $row = mysql_fetch_assoc($ret);
+  $ret = db_query($qry);
+  $row = db_fetch($ret);
   $total = $row['total'];
 
   if ($k != '') {
@@ -669,9 +661,7 @@ EOS;
   $qry = "SELECT * FROM users $sql_where ORDER BY $order"
       ." LIMIT $start,$ipp";
   #print $qry;
-  $ret = mysql_query($qry);
-  print mysql_error();
-
+  $ret = db_query($qry);
 
   unset($form['page']);
   $qs = Qstr($form);
@@ -771,7 +761,7 @@ EOS;
 EOS;
 
   $cnt = 0;
-  while ($row = mysql_fetch_assoc($ret)) {
+  while ($row = db_fetch($ret)) {
     $cnt++;
 
     //print_r($row);
